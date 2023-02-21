@@ -1,19 +1,76 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 
-// Called by our JS entry point to run the example
+fn window() -> web_sys::Window {
+    web_sys::window().expect("no global `window` exists")
+}
+
+fn request_animation_frame(f: &Closure<dyn FnMut(usize)>) {
+    window()
+        .request_animation_frame(f.as_ref().unchecked_ref())
+        .expect("should register `requestAnimationFrame` OK");
+}
+
+fn document() -> web_sys::Document {
+    window()
+        .document()
+        .expect("should have a document on window")
+}
+
+fn body() -> web_sys::HtmlElement {
+    document().body().expect("document should have a body")
+}
+
+
+struct Universe {
+    width: usize,
+    height: usize,
+    fps: f32,
+}
+
+impl Universe {
+    fn new(width: usize, height: usize) -> Self {
+        return Universe { width, height,  fps: 0.0 };
+    }
+
+    fn update(self: &mut Self, delta_time: usize) {
+        self.fps = 1000.0 / delta_time as f32;
+    }
+
+    fn draw(self: &Self) {
+        body().set_text_content(Some(&format!("fps: {}", self.fps)));
+    }
+}
+
+const TIME_MS: usize = 100;
+
 #[wasm_bindgen(start)]
-fn run() -> Result<(), JsValue> {
-    // Use `web_sys`'s global `window` function to get a handle on the global
-    // window object.
-    let window = web_sys::window().expect("no global `window` exists");
-    let document = window.document().expect("should have a document on window");
-    let body = document.body().expect("document should have a body");
+pub fn run() -> Result<(), JsValue> {
+    let update = Rc::new(RefCell::new(None));
+    let update_ptr = update.clone();
 
-    // Manufacture the element we're gonna append
-    let val = document.create_element("p")?;
-    val.set_text_content(Some("Hello from Rust!"));
+    let mut universe = Universe::new(64, 64);
 
-    body.append_child(&val)?;
+    let mut prev_timestamp: usize = 0;
+    let mut time_elapsed: usize = 0;
 
+    *update_ptr.borrow_mut() = Some(Closure::wrap(Box::new(move |timestamp| {
+        let delta_time = timestamp - prev_timestamp;
+        prev_timestamp = timestamp;
+
+        time_elapsed += delta_time;
+        if time_elapsed >= TIME_MS {
+            universe.update(time_elapsed);
+            time_elapsed = 0;
+        }
+
+        universe.draw();
+
+        request_animation_frame(update.borrow().as_ref().unwrap());
+    }) as Box<dyn FnMut(usize)>));
+
+    request_animation_frame(update_ptr.borrow().as_ref().unwrap());
     Ok(())
 }
