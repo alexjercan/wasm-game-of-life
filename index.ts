@@ -4,9 +4,9 @@ import("./pkg").then((m) => start(m)).catch(console.error);
 
 type Module = typeof import("./pkg");
 
-const HEIGHT = 64;
-const WIDTH = 64;
-const CELL_SIZE = 8; // px
+const HEIGHT = 60;
+const WIDTH = 120;
+const CELL_SIZE = 14; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
@@ -76,6 +76,7 @@ class GameLoop {
 enum Brush {
   Normal = "normal",
   Spaceship = "spaceship",
+  Pulsar = "pulsar",
 }
 
 function start(m: Module) {
@@ -115,6 +116,11 @@ function start(m: Module) {
   spaceshipButton.textContent = "🚀";
   paintbrushDiv.appendChild(spaceshipButton);
 
+  const pulsarButton = document.createElement("button");
+  pulsarButton.id = Brush.Pulsar;
+  pulsarButton.textContent = "💓";
+  paintbrushDiv.appendChild(pulsarButton);
+
   let currentBrush = Brush.Normal;
   for (let i = 0; i < paintbrushDiv.children.length; i++) {
     const button = paintbrushDiv.children[i];
@@ -141,6 +147,9 @@ function start(m: Module) {
         break;
       case Brush.Spaceship:
         universe.put_spaceship(row, col);
+        break;
+      case Brush.Pulsar:
+        universe.put_pulsar(row, col);
         break;
       default:
         break;
