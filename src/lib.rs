@@ -2,63 +2,14 @@ use fixedbitset::FixedBitSet;
 use js_sys::Math::random;
 use wasm_bindgen::prelude::*;
 
-const SPACESHIP: &[(u32, u32)] = &[(1, 2), (2, 3), (3, 1), (3, 2), (3, 3)];
-const PULSAR: &[(u32, u32)] = &[
-    (0, 2),
-    (0, 3),
-    (0, 4),
-    (0, 8),
-    (0, 9),
-    (0, 10),
-    (2, 0),
-    (2, 5),
-    (2, 7),
-    (2, 12),
-    (3, 0),
-    (3, 5),
-    (3, 7),
-    (3, 12),
-    (4, 0),
-    (4, 5),
-    (4, 7),
-    (4, 12),
-    (5, 2),
-    (5, 3),
-    (5, 4),
-    (5, 8),
-    (5, 9),
-    (5, 10),
-    (7, 2),
-    (7, 3),
-    (7, 4),
-    (7, 8),
-    (7, 9),
-    (7, 10),
-    (8, 0),
-    (8, 5),
-    (8, 7),
-    (8, 12),
-    (9, 0),
-    (9, 5),
-    (9, 7),
-    (9, 12),
-    (10, 0),
-    (10, 5),
-    (10, 7),
-    (10, 12),
-    (12, 2),
-    (12, 3),
-    (12, 4),
-    (12, 8),
-    (12, 9),
-    (12, 10),
-];
+mod parser;
 
 #[wasm_bindgen]
 pub struct Universe {
     width: u32,
     height: u32,
     cells: FixedBitSet,
+    patterns: parser::PatternCollection,
 }
 
 #[wasm_bindgen]
@@ -67,10 +18,13 @@ impl Universe {
         let size = (width * height) as usize;
         let cells = FixedBitSet::with_capacity(size);
 
+        let patterns = parser::PatternCollection::new();
+
         return Universe {
             width,
             height,
             cells,
+            patterns,
         };
     }
 
@@ -147,12 +101,6 @@ impl Universe {
         self.cells.clear();
     }
 
-    pub fn toggle_cell(&mut self, row: u32, column: u32) {
-        let idx = self.get_index(row, column);
-
-        self.cells.toggle(idx);
-    }
-
     fn put_cells(&mut self, row: u32, column: u32, cells: &[(u32, u32)]) {
         cells.iter().for_each(|(dx, dy)| {
             let idx = self.get_index((row + dx) % self.height, (column + dy) % self.width);
@@ -161,12 +109,19 @@ impl Universe {
         });
     }
 
-    pub fn put_spaceship(&mut self, row: u32, column: u32) {
-        self.put_cells(row, column, SPACESHIP);
+    pub fn put_pattern(&mut self, row: u32,column: u32, name: String) {
+        if let Some(pattern) = self.patterns.get(&name).cloned() {
+            self.put_cells(row, column, pattern.cells());
+        }
     }
 
-    pub fn put_pulsar(&mut self, row: u32, column: u32) {
-        self.put_cells(row, column, PULSAR);
+    pub fn insert_pattern(&mut self, string: String) -> String {
+        let pattern: parser::Pattern = string.parse().expect("pattern to have correct format");
+        let name = pattern.name();
+
+        self.patterns.insert(pattern);
+
+        return name;
     }
 }
 
@@ -180,9 +135,18 @@ pub struct UniverseRenderer {
 
 #[wasm_bindgen]
 impl UniverseRenderer {
-
-    pub fn new(cell_size: u32, grid_color: String, alive_color: String, dead_color: String) -> Self {
-        return UniverseRenderer { cell_size, grid_color, alive_color, dead_color };
+    pub fn new(
+        cell_size: u32,
+        grid_color: String,
+        alive_color: String,
+        dead_color: String,
+    ) -> Self {
+        return UniverseRenderer {
+            cell_size,
+            grid_color,
+            alive_color,
+            dead_color,
+        };
     }
 
     fn draw_grid(self: &Self, universe: &Universe, context: &web_sys::CanvasRenderingContext2d) {

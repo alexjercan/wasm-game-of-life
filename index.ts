@@ -73,15 +73,32 @@ class GameLoop {
   }
 }
 
-enum Brush {
-  Normal = "normal",
-  Spaceship = "spaceship",
-  Pulsar = "pulsar",
+function prettyPatternName(name: string): string {
+  switch (name) {
+    case "Dot":
+      return "⬛";
+    case "Glider":
+      return "🚀";
+    case "Pulsar":
+      return "💓";
+  }
+
+  return name;
 }
 
-function start(m: Module) {
+async function start(m: Module) {
   const universe = m.Universe.new(WIDTH, HEIGHT);
   universe.randomize();
+
+  let patterns: string[] = [];
+  patterns.push(universe.insert_pattern("!Name: Dot\n!Author: Alex\nO"));
+  patterns.push(
+    universe.insert_pattern(
+      "!Name: Glider\n!Author: Richard K. Guy\n!The smallest, most common, and first discovered spaceship.\n!www.conwaylife.com/wiki/index.php?title=Glider\n.O\n..O\nOOO"
+    )
+  );
+
+  // console.log(await fetch("./assets/glider.cells"));
 
   const renderer = m.UniverseRenderer.new(
     CELL_SIZE,
@@ -106,26 +123,16 @@ function start(m: Module) {
   const paintbrushDiv = document.createElement("div");
   document.body.appendChild(paintbrushDiv);
 
-  const normalButton = document.createElement("button");
-  normalButton.id = Brush.Normal;
-  normalButton.textContent = "⬛";
-  paintbrushDiv.appendChild(normalButton);
+  let currentBrush = patterns[0];
+  for (let i = 0; i < patterns.length; i++) {
+    const pattern = patterns[i];
+    const button = document.createElement("button");
+    button.id = pattern;
+    button.textContent = prettyPatternName(pattern);
+    paintbrushDiv.appendChild(button);
 
-  const spaceshipButton = document.createElement("button");
-  spaceshipButton.id = Brush.Spaceship;
-  spaceshipButton.textContent = "🚀";
-  paintbrushDiv.appendChild(spaceshipButton);
-
-  const pulsarButton = document.createElement("button");
-  pulsarButton.id = Brush.Pulsar;
-  pulsarButton.textContent = "💓";
-  paintbrushDiv.appendChild(pulsarButton);
-
-  let currentBrush = Brush.Normal;
-  for (let i = 0; i < paintbrushDiv.children.length; i++) {
-    const button = paintbrushDiv.children[i];
     button.addEventListener("click", (_) => {
-      currentBrush = button.id as Brush;
+      currentBrush = pattern;
     });
   }
 
@@ -141,19 +148,8 @@ function start(m: Module) {
     const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), HEIGHT - 1);
     const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), WIDTH - 1);
 
-    switch (currentBrush) {
-      case Brush.Normal:
-        universe.toggle_cell(row, col);
-        break;
-      case Brush.Spaceship:
-        universe.put_spaceship(row, col);
-        break;
-      case Brush.Pulsar:
-        universe.put_pulsar(row, col);
-        break;
-      default:
-        break;
-    }
+    universe.put_pattern(row, col, currentBrush);
+    // universe.toggle_cell(row, col);
     renderer.draw(universe, context);
   });
 

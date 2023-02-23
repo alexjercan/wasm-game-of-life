@@ -15,17 +15,19 @@ module.exports = {
     }),
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, "."),
-        withTypeScript: true,
+      withTypeScript: true,
     }),
   ],
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".wasm"]
+    extensions: [".ts", ".tsx", ".js", ".wasm"],
   },
   module: {
-    rules: [{
-      test: /\.tsx?$/,
-      loader: "ts-loader",
-    }]
+    rules: [
+      {
+        test: /\.tsx?$/,
+        loader: "ts-loader",
+      },
+    ],
   },
   mode: "development",
   experiments: {
