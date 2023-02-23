@@ -2,6 +2,22 @@ import type { Universe, UniverseRenderer } from "./pkg";
 
 import("./pkg").then((m) => start(m)).catch(console.error);
 
+const DOT = "!Name: Dot\n!Author: Alex\nO";
+import * as glider from "./assets/glider.cells";
+import * as gosperglidergun from "./assets/gosperglidergun.cells";
+import * as pulsar from "./assets/pulsar.cells";
+import * as rats from "./assets/rats.cells";
+import * as _123 from "./assets/123.cells";
+
+const PATTERNS = [
+  DOT,
+  glider as string,
+  pulsar as string,
+  gosperglidergun as string,
+  rats as string,
+  _123 as string,
+];
+
 type Module = typeof import("./pkg");
 
 const HEIGHT = 60;
@@ -81,6 +97,8 @@ function prettyPatternName(name: string): string {
       return "🚀";
     case "Pulsar":
       return "💓";
+    case "Gosper glider gun":
+      return "🔫";
   }
 
   return name;
@@ -90,15 +108,9 @@ async function start(m: Module) {
   const universe = m.Universe.new(WIDTH, HEIGHT);
   universe.randomize();
 
-  let patterns: string[] = [];
-  patterns.push(universe.insert_pattern("!Name: Dot\n!Author: Alex\nO"));
-  patterns.push(
-    universe.insert_pattern(
-      "!Name: Glider\n!Author: Richard K. Guy\n!The smallest, most common, and first discovered spaceship.\n!www.conwaylife.com/wiki/index.php?title=Glider\n.O\n..O\nOOO"
-    )
-  );
+  let patterns = PATTERNS.map((p) => universe.insert_pattern(p));
 
-  // console.log(await fetch("./assets/glider.cells"));
+  console.log(patterns);
 
   const renderer = m.UniverseRenderer.new(
     CELL_SIZE,
@@ -169,6 +181,20 @@ async function start(m: Module) {
       playPauseButton.textContent = "▶";
       game.pause();
     }
+  });
+
+  const stepButton = document.createElement("button");
+  stepButton.textContent = "⏯";
+  controlsDiv.appendChild(stepButton);
+
+  stepButton.addEventListener("click", (_) => {
+    if (!game.isPaused()) {
+      playPauseButton.textContent = "▶";
+      game.pause();
+    }
+
+    universe.update();
+    renderer.draw(universe, context);
   });
 
   const clearButton = document.createElement("button");

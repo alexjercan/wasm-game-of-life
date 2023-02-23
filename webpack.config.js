@@ -8,6 +8,8 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "index.js",
+    assetModuleFilename: "assets/[name][ext]",
+    clean: true,
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -19,13 +21,21 @@ module.exports = {
     }),
   ],
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".wasm"],
+    extensions: [".ts", ".tsx", ".js", ".wasm", ".cells"],
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         loader: "ts-loader",
+      },
+      {
+        test: /\.cells$/,
+        include: path.resolve(__dirname, "."),
+        type: "asset/source",
+        generator: {
+          filename: "assets/[name][ext]",
+        },
       },
     ],
   },
