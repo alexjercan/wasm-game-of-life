@@ -10,6 +10,7 @@ pub struct Universe {
     height: u32,
     cells: FixedBitSet,
     patterns: parser::PatternCollection,
+    wrapping: bool,
 }
 
 #[wasm_bindgen]
@@ -25,7 +26,16 @@ impl Universe {
             height,
             cells,
             patterns,
+            wrapping: false,
         };
+    }
+
+    pub fn wrapping(&self) -> bool {
+        return self.wrapping;
+    }
+
+    pub fn set_wrapping(&mut self, wrapping: bool) {
+        self.wrapping = wrapping;
     }
 
     pub fn width(&self) -> u32 {
@@ -48,16 +58,40 @@ impl Universe {
 
     fn live_neighbor_count(&self, row: u32, column: u32) -> u8 {
         let mut count = 0;
-        for delta_row in [self.height - 1, 0, 1].iter().cloned() {
-            for delta_col in [self.width - 1, 0, 1].iter().cloned() {
-                if delta_row == 0 && delta_col == 0 {
-                    continue;
-                }
+        if self.wrapping {
+            for delta_row in [self.height - 1, 0, 1].iter().cloned() {
+                for delta_col in [self.width - 1, 0, 1].iter().cloned() {
+                    if delta_row == 0 && delta_col == 0 {
+                        continue;
+                    }
 
-                let neighbor_row = (row + delta_row) % self.height;
-                let neighbor_col = (column + delta_col) % self.width;
-                let idx = self.get_index(neighbor_row, neighbor_col);
-                count += self.cells[idx] as u8;
+                    let neighbor_row = (row + delta_row) % self.height;
+                    let neighbor_col = (column + delta_col) % self.width;
+                    let idx = self.get_index(neighbor_row, neighbor_col);
+                    count += self.cells[idx] as u8;
+                }
+            }
+        } else {
+            for delta_row in [-1, 0, 1].iter().cloned() {
+                for delta_col in [-1, 0, 1].iter().cloned() {
+                    if delta_row == 0 && delta_col == 0 {
+                        continue;
+                    }
+
+                    let neighbor_row = row as i32 + delta_row;
+                    let neighbor_col = column as i32 + delta_col;
+
+                    if neighbor_row < 0
+                        || (neighbor_row as u32 >= self.height)
+                        || neighbor_col < 0
+                        || (neighbor_col as u32) >= self.width
+                    {
+                        continue;
+                    }
+
+                    let idx = self.get_index(neighbor_row as u32, neighbor_col as u32);
+                    count += self.cells[idx] as u8;
+                }
             }
         }
 
@@ -102,14 +136,26 @@ impl Universe {
     }
 
     fn put_cells(&mut self, row: u32, column: u32, cells: &[(u32, u32)]) {
-        cells.iter().for_each(|(dx, dy)| {
-            let idx = self.get_index((row + dx) % self.height, (column + dy) % self.width);
+        if self.wrapping {
+            cells.iter().for_each(|(dx, dy)| {
+                let idx = self.get_index((row + dx) % self.height, (column + dy) % self.width);
 
-            self.cells.put(idx);
-        });
+                self.cells.put(idx);
+            });
+        } else {
+            cells.iter().for_each(|(dx, dy)| {
+                let dx = row + dx;
+                let dy = column + dy;
+
+                if dx < self.height && dy < self.width {
+                    let idx = self.get_index(dx, dy);
+                    self.cells.put(idx);
+                }
+            });
+        }
     }
 
-    pub fn put_pattern(&mut self, row: u32,column: u32, name: String) {
+    pub fn put_pattern(&mut self, row: u32, column: u32, name: String) {
         if let Some(pattern) = self.patterns.get(&name).cloned() {
             self.put_cells(row, column, pattern.cells());
         }

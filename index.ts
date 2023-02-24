@@ -90,7 +90,7 @@ function prettyPatternName(name: string): string {
     case "Glider":
       return "🚀";
     case "Herschel":
-        return "h";
+      return "h";
     case "Pulsar":
       return "💓";
   }
@@ -205,5 +205,20 @@ async function start(m: Module) {
   randomizeButton.addEventListener("click", (_) => {
     universe.randomize();
     renderer.draw(universe, context);
+  });
+
+  const wrappingButton = document.createElement("button");
+  wrappingButton.textContent = "🔀";
+  controlsDiv.appendChild(wrappingButton);
+
+  wrappingButton.addEventListener("click", (_) => {
+    const wrapping = universe.wrapping();
+    if (wrapping) {
+      wrappingButton.textContent = "🔀";
+    } else {
+      wrappingButton.textContent = "🔁";
+    }
+
+    universe.set_wrapping(!wrapping);
   });
 }
