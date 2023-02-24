@@ -77,11 +77,15 @@ class GameLoop {
 
 function prettyPatternName(name: string): string {
   switch (name) {
+    case "3c/10 pi wave":
+      return "π";
+    case "Banana Spark":
+      return "🍌";
     case "Blinker":
       return "➕";
     case "Block":
       return "⬛";
-    case "Cell":
+    case "Dot":
       return "•";
     case "Eater 1":
       return "🪝";
@@ -103,8 +107,6 @@ async function start(m: Module) {
   universe.randomize();
 
   let patterns = PATTERNS.map((p) => universe.insert_pattern(p));
-
-  console.log(patterns);
 
   const renderer = m.UniverseRenderer.new(
     CELL_SIZE,

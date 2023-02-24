@@ -1,8 +1,7 @@
 #!/usr/bin/bash
 
-if [ $# -eq 1 ]; then
-    echo "Download Pattern $1"
-    wget "$1" -P ./assets/
+if [ $# -ge 1 ]; then
+    echo "$@" | xargs -I{} sh -c 'echo "Downloading {}..."; wget {} -P ./assets/'
 fi
 
 echo "Update the assets javascript files"
