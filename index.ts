@@ -97,6 +97,10 @@ function prettyPatternName(name: string): string {
       return "h";
     case "Pulsar":
       return "💓";
+    case "Switch engine":
+      return "🚒";
+    case "Unix":
+      return "🐧";
   }
 
   return name;
