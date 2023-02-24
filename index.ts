@@ -135,6 +135,7 @@ async function start(m: Module) {
     const button = document.createElement("button");
     button.id = pattern;
     button.textContent = prettyPatternName(pattern);
+    button.title = pattern;
     paintbrushDiv.appendChild(button);
 
     button.addEventListener("click", (_) => {
@@ -165,6 +166,7 @@ async function start(m: Module) {
 
   const playPauseButton = document.createElement("button");
   playPauseButton.textContent = "⏸";
+  playPauseButton.title = "Play/Pause the simulation";
   controlsDiv.appendChild(playPauseButton);
 
   playPauseButton.addEventListener("click", (_) => {
@@ -179,6 +181,7 @@ async function start(m: Module) {
 
   const stepButton = document.createElement("button");
   stepButton.textContent = "⏯";
+  stepButton.title = "Manually step the simulation";
   controlsDiv.appendChild(stepButton);
 
   stepButton.addEventListener("click", (_) => {
@@ -193,6 +196,7 @@ async function start(m: Module) {
 
   const clearButton = document.createElement("button");
   clearButton.textContent = "↺";
+  clearButton.title = "Clear the simulation";
   controlsDiv.appendChild(clearButton);
   clearButton.addEventListener("click", (_) => {
     universe.clear();
@@ -201,6 +205,7 @@ async function start(m: Module) {
 
   const randomizeButton = document.createElement("button");
   randomizeButton.textContent = "⚄";
+  randomizeButton.title = "Randomize the simulation";
   controlsDiv.appendChild(randomizeButton);
   randomizeButton.addEventListener("click", (_) => {
     universe.randomize();
@@ -209,6 +214,7 @@ async function start(m: Module) {
 
   const wrappingButton = document.createElement("button");
   wrappingButton.textContent = "🔀";
+  wrappingButton.title = "Switch between wrapping and non wrapping modes";
   controlsDiv.appendChild(wrappingButton);
 
   wrappingButton.addEventListener("click", (_) => {
