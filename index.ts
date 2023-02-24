@@ -2,21 +2,7 @@ import type { Universe, UniverseRenderer } from "./pkg";
 
 import("./pkg").then((m) => start(m)).catch(console.error);
 
-const DOT = "!Name: Dot\n!Author: Alex\nO";
-import * as glider from "./assets/glider.cells";
-import * as gosperglidergun from "./assets/gosperglidergun.cells";
-import * as pulsar from "./assets/pulsar.cells";
-import * as rats from "./assets/rats.cells";
-import * as _123 from "./assets/123.cells";
-
-const PATTERNS = [
-  DOT,
-  glider as string,
-  pulsar as string,
-  gosperglidergun as string,
-  rats as string,
-  _123 as string,
-];
+import { PATTERNS } from "./assets";
 
 type Module = typeof import("./pkg");
 
@@ -91,14 +77,22 @@ class GameLoop {
 
 function prettyPatternName(name: string): string {
   switch (name) {
-    case "Dot":
+    case "Blinker":
+      return "➕";
+    case "Block":
       return "⬛";
-    case "Glider":
-      return "🚀";
-    case "Pulsar":
-      return "💓";
+    case "Cell":
+      return "•";
+    case "Eater 1":
+      return "🪝";
     case "Gosper glider gun":
       return "🔫";
+    case "Glider":
+      return "🚀";
+    case "Herschel":
+        return "h";
+    case "Pulsar":
+      return "💓";
   }
 
   return name;

@@ -8,6 +8,7 @@
   },
   "files": [
     "index.ts",
-    "index.d.ts",
+    "assets/index.d.ts",
+    "assets/index.ts",
   ],
 }
