@@ -31,7 +31,11 @@ class GameLoop {
 
   private _paused: boolean;
 
-  set_placeholder(row: null | number, col: null | number, brush: null | string) {
+  set_placeholder(
+    row: null | number,
+    col: null | number,
+    brush: null | string
+  ) {
     this._placeholder_row = row;
     this._placeholder_col = col;
     this._placeholder_brush = brush;
@@ -69,15 +73,25 @@ class GameLoop {
     this._timeElapsed += deltaTime;
     if (this._timeElapsed >= TICK_MS) {
       if (!this._paused) {
-          this._universe.update();
+        this._universe.update();
       }
       this._timeElapsed = 0;
     }
 
     this._renderer.draw(this._universe, this._context);
 
-    if (this._placeholder_row !== null && this._placeholder_col !== null && this._placeholder_brush !== null) {
-        this._renderer.draw_placeholder(this._universe, this._context, this._placeholder_row, this._placeholder_col, this._placeholder_brush);
+    if (
+      this._placeholder_row !== null &&
+      this._placeholder_col !== null &&
+      this._placeholder_brush !== null
+    ) {
+      this._renderer.draw_placeholder(
+        this._universe,
+        this._context,
+        this._placeholder_row,
+        this._placeholder_col,
+        this._placeholder_brush
+      );
     }
 
     this._animationId = requestAnimationFrame(this._loop.bind(this));
@@ -92,7 +106,7 @@ class GameLoop {
     this._timeElapsed = 0;
 
     if (this._animationId !== null) {
-        cancelAnimationFrame(this._animationId);
+      cancelAnimationFrame(this._animationId);
     }
     this._animationId = requestAnimationFrame(this._init.bind(this));
     this._paused = false;
@@ -145,7 +159,7 @@ async function start(m: Module) {
     GRID_COLOR,
     ALIVE_COLOR,
     DEAD_COLOR,
-    PLACEHOLDER_COLOR,
+    PLACEHOLDER_COLOR
   );
 
   // Rendering Section
