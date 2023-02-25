@@ -12,7 +12,7 @@ const CELL_SIZE = 14; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
-const PLACEHOLDER_COLOR = "#A4A4A4";
+const PLACEHOLDER_COLOR = "#DDDDDD";
 const TICK_MS = 100;
 
 class GameLoop {
@@ -93,6 +93,7 @@ class GameLoop {
         this._placeholder_brush
       );
     }
+
 
     this._animationId = requestAnimationFrame(this._loop.bind(this));
   }
