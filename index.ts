@@ -29,6 +29,8 @@ class GameLoop {
   private _placeholder_col: null | number;
   private _placeholder_brush: null | string;
 
+  private _paused: boolean;
+
   set_placeholder(row: null | number, col: null | number, brush: null | string) {
     this._placeholder_row = row;
     this._placeholder_col = col;
@@ -51,6 +53,8 @@ class GameLoop {
     this._placeholder_row = null;
     this._placeholder_col = null;
     this._placeholder_brush = null;
+
+    this._paused = true;
   }
 
   private _init(timestamp: number) {
@@ -64,7 +68,9 @@ class GameLoop {
 
     this._timeElapsed += deltaTime;
     if (this._timeElapsed >= TICK_MS) {
-      this._universe.update();
+      if (!this._paused) {
+          this._universe.update();
+      }
       this._timeElapsed = 0;
     }
 
@@ -78,19 +84,22 @@ class GameLoop {
   }
 
   isPaused() {
-    return this._animationId === null;
+    return this._paused;
   }
 
   play() {
     this._prevTimestamp = null;
     this._timeElapsed = 0;
 
+    if (this._animationId !== null) {
+        cancelAnimationFrame(this._animationId);
+    }
     this._animationId = requestAnimationFrame(this._init.bind(this));
+    this._paused = false;
   }
 
   pause() {
-    cancelAnimationFrame(this._animationId);
-    this._animationId = null;
+    this._paused = true;
   }
 }
 
