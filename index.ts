@@ -12,6 +12,7 @@ const CELL_SIZE = 14; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
+const PLACEHOLDER_COLOR = "#A4A4A4";
 const TICK_MS = 100;
 
 class GameLoop {
@@ -23,6 +24,16 @@ class GameLoop {
 
   private _prevTimestamp: null | number;
   private _timeElapsed: number;
+
+  private _placeholder_row: null | number;
+  private _placeholder_col: null | number;
+  private _placeholder_brush: null | string;
+
+  set_placeholder(row: null | number, col: null | number, brush: null | string) {
+    this._placeholder_row = row;
+    this._placeholder_col = col;
+    this._placeholder_brush = brush;
+  }
 
   constructor(
     universe: Universe,
@@ -36,6 +47,10 @@ class GameLoop {
     this._animationId = null;
     this._prevTimestamp = null;
     this._timeElapsed = 0;
+
+    this._placeholder_row = null;
+    this._placeholder_col = null;
+    this._placeholder_brush = null;
   }
 
   private _init(timestamp: number) {
@@ -54,6 +69,10 @@ class GameLoop {
     }
 
     this._renderer.draw(this._universe, this._context);
+
+    if (this._placeholder_row !== null && this._placeholder_col !== null && this._placeholder_brush !== null) {
+        this._renderer.draw_placeholder(this._universe, this._context, this._placeholder_row, this._placeholder_col, this._placeholder_brush);
+    }
 
     this._animationId = requestAnimationFrame(this._loop.bind(this));
   }
@@ -116,7 +135,8 @@ async function start(m: Module) {
     CELL_SIZE,
     GRID_COLOR,
     ALIVE_COLOR,
-    DEAD_COLOR
+    DEAD_COLOR,
+    PLACEHOLDER_COLOR,
   );
 
   // Rendering Section
@@ -149,6 +169,21 @@ async function start(m: Module) {
     });
   }
 
+  canvas.addEventListener("mousemove", (event) => {
+    const boundingRect = canvas.getBoundingClientRect();
+
+    const scaleX = canvas.width / boundingRect.width;
+    const scaleY = canvas.height / boundingRect.height;
+
+    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+    const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), HEIGHT - 1);
+    const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), WIDTH - 1);
+
+    game.set_placeholder(row, col, currentBrush);
+  });
+
   canvas.addEventListener("click", (event) => {
     const boundingRect = canvas.getBoundingClientRect();
 
@@ -162,7 +197,6 @@ async function start(m: Module) {
     const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), WIDTH - 1);
 
     universe.put_pattern(row, col, currentBrush);
-    // universe.toggle_cell(row, col);
     renderer.draw(universe, context);
   });
 

@@ -177,6 +177,7 @@ pub struct UniverseRenderer {
     grid_color: String,
     alive_color: String,
     dead_color: String,
+    placeholder_color: String,
 }
 
 #[wasm_bindgen]
@@ -186,12 +187,14 @@ impl UniverseRenderer {
         grid_color: String,
         alive_color: String,
         dead_color: String,
+        placeholder_color: String,
     ) -> Self {
         return UniverseRenderer {
             cell_size,
             grid_color,
             alive_color,
             dead_color,
+            placeholder_color,
         };
     }
 
@@ -247,5 +250,52 @@ impl UniverseRenderer {
     pub fn draw(&self, universe: &Universe, context: &web_sys::CanvasRenderingContext2d) {
         self.draw_grid(universe, context);
         self.draw_cells(universe, context);
+    }
+
+    pub fn draw_placeholder(
+        &mut self,
+        universe: &Universe,
+        context: &web_sys::CanvasRenderingContext2d,
+        row: u32,
+        column: u32,
+        name: String,
+    ) {
+        self.draw_grid(universe, context);
+        self.draw_cells(universe, context);
+
+        if let Some(pattern) = universe.patterns.get(&name).cloned() {
+            let cells = pattern.cells();
+            if universe.wrapping() {
+                cells.iter().for_each(|(dx, dy)| {
+                    let dx = (row + dx) % universe.height();
+                    let dy = (column + dy) % universe.width();
+
+                    context.set_fill_style(&JsValue::from(&self.placeholder_color));
+
+                    context.fill_rect(
+                        (dy * (self.cell_size + 1) + 1) as f64,
+                        (dx * (self.cell_size + 1) + 1) as f64,
+                        self.cell_size as f64,
+                        self.cell_size as f64,
+                    );
+                });
+            } else {
+                cells.iter().for_each(|(dx, dy)| {
+                    let dx = row + dx;
+                    let dy = column + dy;
+
+                    if dx < universe.height && dy < universe.width {
+                        context.set_fill_style(&JsValue::from(&self.placeholder_color));
+
+                        context.fill_rect(
+                            (dy * (self.cell_size + 1) + 1) as f64,
+                            (dx * (self.cell_size + 1) + 1) as f64,
+                            self.cell_size as f64,
+                            self.cell_size as f64,
+                        );
+                    }
+                });
+            }
+        }
     }
 }
