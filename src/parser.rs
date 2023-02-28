@@ -57,6 +57,37 @@ impl Pattern {
     pub fn cells(&self) -> &Cells {
         return &self.cells;
     }
+
+    pub fn rotate(&self, count: u8) -> Cells {
+        if self.cells.len() == 0 {
+            return self.cells.clone();
+        }
+
+        let max_x = self
+            .cells
+            .iter()
+            .map(|(x, _)| x)
+            .max()
+            .expect("to have some cells");
+        let max_y = self
+            .cells
+            .iter()
+            .map(|(_, y)| y)
+            .max()
+            .expect("to have some cells");
+
+        return match count % 4 {
+            0 => self.cells.clone(),
+            1 => self.cells.iter().map(|(x, y)| (*y, max_x - x)).collect(),
+            2 => self
+                .cells
+                .iter()
+                .map(|(x, y)| (max_x - x, max_y - y))
+                .collect(),
+            3 => self.cells.iter().map(|(x, y)| (max_y - y, *x)).collect(),
+            _ => unreachable!(),
+        };
+    }
 }
 
 pub struct PatternCollection {

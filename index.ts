@@ -6,14 +6,16 @@ import { PATTERNS } from "./assets";
 
 type Module = typeof import("./pkg");
 
-const HEIGHT = 60;
-const WIDTH = 120;
-const CELL_SIZE = 14; // px
-const GRID_COLOR = "#CCCCCC";
+const HEIGHT = 100;
+const WIDTH = 200;
+const CELL_SIZE = 8; // px
+const GRID_COLOR = "#FFFFFF";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 const PLACEHOLDER_COLOR = "#DDDDDD";
 const TICK_MS = 100;
+
+let rotation = 0;
 
 class GameLoop {
   private _universe: Universe;
@@ -90,10 +92,10 @@ class GameLoop {
         this._context,
         this._placeholder_row,
         this._placeholder_col,
-        this._placeholder_brush
+        this._placeholder_brush,
+        rotation
       );
     }
-
 
     this._animationId = requestAnimationFrame(this._loop.bind(this));
   }
@@ -122,6 +124,8 @@ function prettyPatternName(name: string): string {
   switch (name) {
     case "3c/10 pi wave":
       return "π";
+    case "Acorn":
+      return "🌰";
     case "Banana Spark":
       return "🍌";
     case "Blinker":
@@ -220,7 +224,7 @@ async function start(m: Module) {
     const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), HEIGHT - 1);
     const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), WIDTH - 1);
 
-    universe.put_pattern(row, col, currentBrush);
+    universe.put_pattern(row, col, currentBrush, rotation);
     renderer.draw(universe, context);
   });
 
@@ -290,5 +294,21 @@ async function start(m: Module) {
     }
 
     universe.set_wrapping(!wrapping);
+  });
+
+  const rotateButton = document.createElement("button");
+  rotateButton.textContent = `${rotation * 90}`;
+  rotateButton.title = "Use to rotate the patterns, or you can use `R`";
+  controlsDiv.appendChild(rotateButton);
+
+  rotateButton.addEventListener("click", (_) => {
+    rotation = (rotation + 1) % 4;
+    rotateButton.textContent = `${rotation * 90}`;
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "r") {
+      rotation = (rotation + 1) % 4;
+    }
   });
 }

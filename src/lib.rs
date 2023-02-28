@@ -155,9 +155,9 @@ impl Universe {
         }
     }
 
-    pub fn put_pattern(&mut self, row: u32, column: u32, name: String) {
+    pub fn put_pattern(&mut self, row: u32, column: u32, name: String, rotation: u8) {
         if let Some(pattern) = self.patterns.get(&name).cloned() {
-            self.put_cells(row, column, pattern.cells());
+            self.put_cells(row, column, &pattern.rotate(rotation));
         }
     }
 
@@ -259,12 +259,14 @@ impl UniverseRenderer {
         row: u32,
         column: u32,
         name: String,
+        rotation: u8,
     ) {
         self.draw_grid(universe, context);
         self.draw_cells(universe, context);
 
         if let Some(pattern) = universe.patterns.get(&name).cloned() {
-            let cells = pattern.cells();
+            let cells = pattern.rotate(rotation);
+
             if universe.wrapping() {
                 cells.iter().for_each(|(dx, dy)| {
                     let dx = (row + dx) % universe.height();
